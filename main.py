@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from streamlit_gsheets import GSheetsConnection
 
 # 페이지 설정
 st.set_page_config(layout="wide", page_title="학생 점수 대시보드")
@@ -10,10 +11,10 @@ st.write("구글 시트에서 학생 점수 데이터를 가져와 시각화합�
 
 # Google Sheets 연결
 try:
-    conn = st.connection("gsheets", type="gsheets")
+    conn = st.connection("gsheets", type=GSheetsConnection)
 except Exception as e:
     st.error(f"Google Sheets 연결에 실패했습니다: {e}")
-    st.info("Google Sheets 인증 정보가 올바르게 설정되었는지 확인해주세요. 'streamlit-gsheets-connection' 패키지가 설치되어 있는지 확인하세요.")
+    st.info("Google Sheets 인증 정보가 올바르게 설정되었는지 확인해주세요.")
     st.stop()
 
 # --- 시트 선택 기능 ---
