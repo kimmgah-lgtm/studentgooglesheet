@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from streamlit_gsheets import GSheetsConnection
+
 
 # 페이지 설정
 st.set_page_config(layout="wide", page_title="학생 점수 대시보드")
@@ -24,7 +24,7 @@ except Exception as e:
 # 임의의 목록을 사용하거나, 사용자가 직접 입력하도록 할 수 있습니다.
 # 여기서는 예시로 워크시트 이름을 직접 지정합니다.
 # 실제 시트에서 사용하고 있는 워크시트 이름으로 변경해주세요.
-WORKSHEET_NAMES = ["Sheet1", "Sheet2"] # 여기에 실제 구글 시트의 워크시트 이름을 입력하세요.
+WORKSHEET_NAMES = ["국어", "수학", "사회", "과학"] # 여기에 실제 구글 시트의 워크시트 이름을 입력하세요.
 
 selected_worksheet_name = st.sidebar.selectbox(
     "데이터를 가져올 시트를 선택하세요:",
