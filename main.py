@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from streamlit_gsheets import GSheetsConnection
+from st_gsheets_connection import GSheetsConnection
 
 # 페이지 설정
 st.set_page_config(layout="wide", page_title="학생 점수 대시보드")
