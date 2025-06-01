@@ -53,14 +53,14 @@ if df.empty:
     st.stop()
 
 # 데이터 전처리 및 확인
-expected_columns = ["번호", "이름", "성별", "1단원", "2단원"]
+expected_columns = ["번호", "이름", "성별", "1단원", "2단원", "3단원", "4단원", "5단원"]
 if not all(col in df.columns for col in expected_columns):
     st.error(f"데이터에 예상된 열 {expected_columns}이(가) 없습니다. 구글 시트의 열 구조를 확인해주세요.")
     st.dataframe(df)
     st.stop()
 
 # 점수 컬럼 추출
-score_columns = ["1단원", "2단원"]
+score_columns = ["1단원", "2단원", "3단원", "4단원", "5단원"]
 
 # 점수 데이터를 숫자로 변환
 for col in score_columns:
