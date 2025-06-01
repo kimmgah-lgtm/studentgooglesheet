@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import os
 
 # 페이지 설정
 st.set_page_config(layout="wide", page_title="학생 점수 대시보드")
@@ -14,12 +13,11 @@ try:
     conn = st.connection("gsheets", type="gsheets")
 except Exception as e:
     st.error(f"Google Sheets 연결에 실패했습니다: {e}")
-    st.info("Google Sheets 인증 정보가 올바르게 설정되었는지 확인해주세요.")
+    st.info("Google Sheets 인증 정보가 올바르게 설정되었는지 확인해주세요. 'streamlit-gsheets-connection' 패키지가 설치되어 있는지 확인하세요.")
     st.stop()
 
 # --- 시트 선택 기능 ---
-# 워크시트 이름 목록 (실제 구글 시트의 워크시트 이름으로 변경하세요)
-WORKSHEET_NAMES = ["국어", "수학", "사회", "과학"]
+WORKSHEET_NAMES = ["국어", "수학", "사회", "과학"]  # 실제 워크시트 이름으로 변경
 
 selected_worksheet_name = st.sidebar.selectbox(
     "데이터를 가져올 시트를 선택하세요:",
@@ -30,16 +28,15 @@ if not selected_worksheet_name:
     st.warning("선택된 시트가 없습니다. 시트를 선택해주세요.")
     st.stop()
 
-@st.cache_data(ttl=600)  # 10분마다 데이터 새로고침
+@st.cache_data(ttl=600)
 def load_data(worksheet_name):
     try:
         df = conn.read(worksheet=worksheet_name, ttl=600)
-        # 빈 행 제거 (모든 값이 NaN인 행)
         df = df.dropna(how="all")
         return df
     except Exception as e:
         st.error(f"'{worksheet_name}' 시트에서 데이터를 불러오는 데 실패했습니다: {e}")
-        return pd.DataFrame()  # 빈 DataFrame 반환
+        return pd.DataFrame()
 
 df = load_data(selected_worksheet_name)
 
@@ -50,13 +47,13 @@ if df.empty:
 # 데이터 전처리 및 확인
 if "이름" not in df.columns:
     st.error("데이터에 '이름' 컬럼이 없습니다. 구글 시트의 첫 번째 열 이름을 '이름'으로 설정하거나, 코드에서 컬럼 이름을 수정해주세요.")
-    st.dataframe(df)  # 디버깅을 위해 로드된 데이터 표시
+    st.dataframe(df)
     st.stop()
 
-# '이름' 컬럼을 제외한 나머지 컬럼은 점수 데이터로 간주
+# 점수 컬럼 추출
 score_columns = [col for col in df.columns if col != "이름"]
 
-# 점수 데이터를 숫자로 변환 (변환할 수 없는 값은 NaN으로)
+# 점수 데이터를 숫자로 변환
 for col in score_columns:
     df[col] = pd.to_numeric(df[col], errors="coerce")
 
@@ -66,9 +63,7 @@ overall_averages.columns = ["단원", "평균 점수"]
 
 # --- 사이드바에 이름 목록 표시 ---
 st.sidebar.header("학생 선택")
-student_names = df["이름"].tolist()
-# student_names 리스트에서 NaN 값 제거
-student_names = [name for name in student_names if pd.notna(name)]
+student_names = [name for name in df["이름"].tolist() if pd.notna(name)]
 
 if not student_names:
     st.sidebar.warning("학생 이름을 찾을 수 없습니다. '이름' 컬럼을 확인해주세요.")
@@ -86,11 +81,9 @@ if selected_student:
         "점수": [student_data[col] for col in score_columns]
     })
 
-    # 전체 평균과 학생 점수 데이터를 하나의 DataFrame으로 합치기
     plot_df = pd.merge(overall_averages, student_scores, on="단원", how="left")
     plot_df.columns = ["단원", "전체 평균", "내 점수"]
 
-    # 꺾은선 그래프 생성 (Plotly)
     fig = px.line(
         plot_df,
         x="단원",
