@@ -2,10 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from streamlit_gsheets import GSheetsConnection
-import locale
-
-# Python 환경의 기본 인코딩을 UTF-8로 설정
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 # 페이지 설정
 st.set_page_config(layout="wide", page_title="학생 점수 대시보드")
