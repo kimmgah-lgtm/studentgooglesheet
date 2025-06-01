@@ -12,7 +12,7 @@ st.write("구글 시트에서 학생 점수 데이터를 가져와 시각화합�
 # Google Sheets 연결
 # .streamlit/secrets.toml에 설정된 'gsheets' 연결을 사용합니다.
 try:
-    conn = st.connection("gsheets", type=GSheetsConnection)
+    conn = st.connection("gsheets") # <-- type=GSheetsConnection 부분을 삭제했습니다.
 except Exception as e:
     st.error(f"Google Sheets 연결에 실패했습니다: {e}")
     st.info("`.streamlit/secrets.toml` 파일에 구글 시트 공유 주소가 올바르게 설정되었는지 확인해주세요.")
