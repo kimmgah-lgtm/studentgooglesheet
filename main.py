@@ -37,6 +37,10 @@ def load_data(worksheet_name):
         st.write(f"'{worksheet_name}' 시트에서 로드된 데이터 미리보기:")
         st.dataframe(df.head())  # 디버깅용 데이터 미리보기
         df = df.dropna(how="all")
+        # 문자열 열을 UTF-8로 강제 변환
+        for col in df.columns:
+            if df[col].dtype == "object":
+                df[col] = df[col].astype(str).str.encode('utf-8', errors='ignore').str.decode('utf-8')
         return df
     except Exception as e:
         st.error(f"'{worksheet_name}' 시트에서 데이터를 불러오는 데 실패했습니다: {e}")
@@ -49,14 +53,13 @@ if df.empty:
     st.stop()
 
 # 데이터 전처리 및 확인
-# 실제 열 구조: 번호, 이름, 성별, 1단원, 2단원
 expected_columns = ["번호", "이름", "성별", "1단원", "2단원"]
 if not all(col in df.columns for col in expected_columns):
     st.error(f"데이터에 예상된 열 {expected_columns}이(가) 없습니다. 구글 시트의 열 구조를 확인해주세요.")
     st.dataframe(df)
     st.stop()
 
-# 점수 컬럼 추출 (번호, 이름, 성별 제외)
+# 점수 컬럼 추출
 score_columns = ["1단원", "2단원"]
 
 # 점수 데이터를 숫자로 변환
