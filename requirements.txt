@@ -2,3 +2,4 @@ gspread
 streamlit 
 pandas 
 plotly 
+streamlit-gsheets-connection
