@@ -1,7 +1,9 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from st_gsheets_connection import GSheetsConnection  # 올바른 모듈 이름 유지
+import gspread
+from google.oauth2.service_account import Credentials
+import json
 
 # 페이지 설정
 st.set_page_config(layout="wide", page_title="학생 점수 대시보드")
@@ -9,12 +11,21 @@ st.set_page_config(layout="wide", page_title="학생 점수 대시보드")
 st.title("📚 학생 점수 대시보드")
 st.write("구글 시트에서 학생 점수 데이터를 가져와 시각화합니다.")
 
-# Google Sheets 연결
+# Google Sheets 인증
 try:
-    conn = st.connection("gsheets", type=GSheetsConnection)
+    credentials_info = st.secrets["connections"]["gsheets"]["private_gsheets_credentials"]
+    if isinstance(credentials_info, str):
+        credentials_info = json.loads(credentials_info)
+    credentials = Credentials.from_service_account_info(
+        credentials_info,
+        scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+    )
+    gc = gspread.authorize(credentials)
+    spreadsheet_url = st.secrets["connections"]["gsheets"]["spreadsheet"]
+    spreadsheet = gc.open_by_url(spreadsheet_url)
 except Exception as e:
     st.error(f"Google Sheets 연결에 실패했습니다: {e}")
-    st.info("Google Sheets 인증 정보가 올바르게 설정되었는지 확인해주세요. Secrets에서 'private_gsheets_credentials'가 유효한 JSON 문자열인지 확인하세요.")
+    st.info("Google Sheets 인증 정보가 올바르게 설정되었는지 확인해주세요.")
     st.stop()
 
 # --- 시트 선택 기능 ---
@@ -32,12 +43,12 @@ if not selected_worksheet_name:
 @st.cache_data(ttl=600)
 def load_data(worksheet_name):
     try:
-        # 워크시트 데이터 로드
-        df = conn.read(worksheet=worksheet_name, ttl=600)
+        worksheet = spreadsheet.worksheet(worksheet_name)
+        data = worksheet.get_all_values()
+        df = pd.DataFrame(data[1:], columns=data[0])
         st.write(f"'{worksheet_name}' 시트에서 로드된 데이터 미리보기:")
-        st.dataframe(df.head())  # 디버깅용 데이터 미리보기
+        st.dataframe(df.head())
         df = df.dropna(how="all")
-        # 문자열 열을 UTF-8로 강제 변환
         for col in df.columns:
             if df[col].dtype == "object":
                 df[col] = df[col].astype(str).str.encode('utf-8', errors='ignore').str.decode('utf-8')
