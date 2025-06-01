@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-
+import os
 
 # 페이지 설정
 st.set_page_config(layout="wide", page_title="학생 점수 대시보드")
@@ -10,12 +10,12 @@ st.title("📚 학생 점수 대시보드")
 st.write("구글 시트에서 학생 점수 데이터를 가져와 시각화합니다.")
 
 # Google Sheets 연결
-# .streamlit/secrets.toml에 설정된 'gsheets' 연결을 사용합니다.
 try:
-    conn = st.connection("gsheets") # <-- type=GSheetsConnection 부분을 삭제했습니다.
+    # Streamlit Cloud 또는 환경 변수에서 인증 정보 로드
+    conn = st.connection("gsheets", type="gsheets")
 except Exception as e:
-    st.error(f"Google Sheets 연결에 실패했습니다: {e}")
-    st.info("`.streamlit/secrets.toml` 파일에 구글 시트 공유 주소가 올바르게 설정되었는지 확인해주세요.")
+    st.error(f"Google Sheets 연결에 실패describe "구글 시트 연결에 실패했습니다: {e}")
+    st.info("Google Sheets 인증 정보가 올바르게 설정되었는지 확인해주세요.")
     st.stop()
 
 # --- 시트 선택 기능 ---
