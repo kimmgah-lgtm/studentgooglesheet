@@ -2,6 +2,10 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from streamlit_gsheets import GSheetsConnection
+import locale
+
+# Python 환경의 기본 인코딩을 UTF-8로 설정
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 # 페이지 설정
 st.set_page_config(layout="wide", page_title="학생 점수 대시보드")
@@ -18,7 +22,7 @@ except Exception as e:
     st.stop()
 
 # --- 시트 선택 기능 ---
-WORKSHEET_NAMES = ["국어", "수학", "사회", "과학"]  # 실제 워크시트 이름으로 변경
+WORKSHEET_NAMES = ["국어", "수학", "사회", "과학"]
 
 selected_worksheet_name = st.sidebar.selectbox(
     "데이터를 가져올 시트를 선택하세요:",
@@ -32,7 +36,10 @@ if not selected_worksheet_name:
 @st.cache_data(ttl=600)
 def load_data(worksheet_name):
     try:
+        # 워크시트 데이터 로드
         df = conn.read(worksheet=worksheet_name, ttl=600)
+        st.write(f"'{worksheet_name}' 시트에서 로드된 데이터 미리보기:")
+        st.dataframe(df.head())  # 디버깅용 데이터 미리보기
         df = df.dropna(how="all")
         return df
     except Exception as e:
@@ -46,13 +53,15 @@ if df.empty:
     st.stop()
 
 # 데이터 전처리 및 확인
-if "이름" not in df.columns:
-    st.error("데이터에 '이름' 컬럼이 없습니다. 구글 시트의 첫 번째 열 이름을 '이름'으로 설정하거나, 코드에서 컬럼 이름을 수정해주세요.")
+# 실제 열 구조: 번호, 이름, 성별, 1단원, 2단원
+expected_columns = ["번호", "이름", "성별", "1단원", "2단원"]
+if not all(col in df.columns for col in expected_columns):
+    st.error(f"데이터에 예상된 열 {expected_columns}이(가) 없습니다. 구글 시트의 열 구조를 확인해주세요.")
     st.dataframe(df)
     st.stop()
 
-# 점수 컬럼 추출
-score_columns = [col for col in df.columns if col != "이름"]
+# 점수 컬럼 추출 (번호, 이름, 성별 제외)
+score_columns = ["1단원", "2단원"]
 
 # 점수 데이터를 숫자로 변환
 for col in score_columns:
