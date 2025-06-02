@@ -29,16 +29,16 @@ except Exception as e:
     st.stop()
 
 # --- 동적 시트 이름 가져오기 ---
-@st.cache_data(ttl=600)
+@st.cache_data(ttl=300)  # 5분마다 갱신
 def get_worksheet_names():
     try:
-        return spreadsheet.worksheets()  # 모든 워크시트 리스트 반환
+        return spreadsheet.worksheets()
     except Exception as e:
         st.error(f"워크시트 목록을 가져오는 데 실패했습니다: {e}")
         return []
 
 worksheets = get_worksheet_names()
-WORKSHEET_NAMES = [ws.title for ws in worksheets]  # 워크시트 제목 리스트
+WORKSHEET_NAMES = [ws.title for ws in worksheets]
 
 if not WORKSHEET_NAMES:
     st.warning("워크시트가 없습니다. 구글 시트에 적어도 하나의 시트를 추가해주세요.")
@@ -50,13 +50,12 @@ selected_worksheet_name = st.sidebar.selectbox(
     WORKSHEET_NAMES
 )
 
-@st.cache_data(ttl=600)
+@st.cache_data(ttl=300)  # 5분마다 갱신
 def load_data(worksheet_name):
     try:
         worksheet = spreadsheet.worksheet(worksheet_name)
         data = worksheet.get_all_values()
         df = pd.DataFrame(data[1:], columns=data[0])
-        st.write(f"'{worksheet_name}' 시트에서 로드된 데이터 미리보기:")
         df = df.dropna(how="all")
         for col in df.columns:
             if df[col].dtype == "object":
@@ -66,6 +65,11 @@ def load_data(worksheet_name):
         st.error(f"'{worksheet_name}' 시트에서 데이터를 불러오는 데 실패했습니다: {e}")
         return pd.DataFrame()
 
+# 갱신 버튼
+if st.button("데이터 새로고침"):
+    st.cache_data.clear()  # 캐시 초기화
+    st.rerun()  # 앱 새로고침
+
 df = load_data(selected_worksheet_name)
 
 if df.empty:
@@ -73,8 +77,8 @@ if df.empty:
     st.stop()
 
 # 데이터 전처리 및 확인
-expected_columns = ["번호", "이름", "성별"]  # 고정 열
-score_columns = [col for col in df.columns if col not in expected_columns]  # 동적 점수 열
+expected_columns = ["번호", "이름", "성별"]
+score_columns = [col for col in df.columns if col not in expected_columns]
 if not all(col in df.columns for col in expected_columns):
     st.error(f"데이터에 예상된 열 {expected_columns}이(가) 없습니다. 구글 시트의 열 구조를 확인해주세요.")
     st.dataframe(df, hide_index=True)
@@ -105,7 +109,7 @@ if selected_student:
     # 선택된 학생 데이터 필터링
     student_df = df[df["이름"] == selected_student]
     st.write(f"'{selected_worksheet_name}' 시트에서 '{selected_student}' 학생 데이터 미리보기:")
-    st.dataframe(student_df[expected_columns + score_columns], hide_index=True)  # 고정 + 점수 열
+    st.dataframe(student_df[expected_columns + score_columns], hide_index=True)
 
     student_data = student_df.iloc[0]
     student_scores = pd.DataFrame({
