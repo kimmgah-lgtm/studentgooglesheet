@@ -28,17 +28,27 @@ except Exception as e:
     st.info("Google Sheets 인증 정보가 올바르게 설정되었는지 확인해주세요.")
     st.stop()
 
-# --- 시트 선택 기능 ---
-WORKSHEET_NAMES = ["국어", "수학", "사회", "과학"]
+# --- 동적 시트 이름 가져오기 ---
+@st.cache_data(ttl=600)
+def get_worksheet_names():
+    try:
+        return spreadsheet.worksheets()  # 모든 워크시트 리스트 반환
+    except Exception as e:
+        st.error(f"워크시트 목록을 가져오는 데 실패했습니다: {e}")
+        return []
 
+worksheets = get_worksheet_names()
+WORKSHEET_NAMES = [ws.title for ws in worksheets]  # 워크시트 제목 리스트
+
+if not WORKSHEET_NAMES:
+    st.warning("워크시트가 없습니다. 구글 시트에 적어도 하나의 시트를 추가해주세요.")
+    st.stop()
+
+# --- 시트 선택 기능 ---
 selected_worksheet_name = st.sidebar.selectbox(
     "데이터를 가져올 시트를 선택하세요:",
     WORKSHEET_NAMES
 )
-
-if not selected_worksheet_name:
-    st.warning("선택된 시트가 없습니다. 시트를 선택해주세요.")
-    st.stop()
 
 @st.cache_data(ttl=600)
 def load_data(worksheet_name):
