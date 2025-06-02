@@ -78,7 +78,7 @@ st.markdown("""
         font-size: 16px;
     }
     .refresh-button:hover {
-        background-color: #0056b3;
+        background-color: #DC3545;
     }
     </style>
     """, unsafe_allow_html=True)
