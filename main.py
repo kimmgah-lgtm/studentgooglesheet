@@ -141,7 +141,7 @@ if selected_student:
     st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("세부 점수")
-    st.dataframe(plot_df.set_index("단원"), hide_index=True)
+    st.dataframe(plot_df.set_index("단원"))  # 인덱스 숨김 제거하여 "단원" 표시
 
 else:
     st.info("왼쪽 사이드바에서 학생을 선택하여 대시보드를 확인하세요.")
