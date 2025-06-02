@@ -47,7 +47,6 @@ def load_data(worksheet_name):
         data = worksheet.get_all_values()
         df = pd.DataFrame(data[1:], columns=data[0])
         st.write(f"'{worksheet_name}' 시트에서 로드된 데이터 미리보기:")
-        st.dataframe(df.head())
         df = df.dropna(how="all")
         for col in df.columns:
             if df[col].dtype == "object":
@@ -67,7 +66,7 @@ if df.empty:
 expected_columns = ["번호", "이름", "성별", "1단원", "2단원", "3단원", "4단원", "5단원"]
 if not all(col in df.columns for col in expected_columns):
     st.error(f"데이터에 예상된 열 {expected_columns}이(가) 없습니다. 구글 시트의 열 구조를 확인해주세요.")
-    st.dataframe(df)
+    st.dataframe(df, hide_index=True)  # 인덱스 숨김
     st.stop()
 
 # 점수 컬럼 추출
@@ -91,11 +90,16 @@ if not student_names:
 
 selected_student = st.sidebar.radio("학생 이름을 클릭하세요:", student_names)
 
-# --- 선택된 학생의 데이터 시각화 ---
+# --- 선택된 학생의 데이터 미리보기 및 시각화 ---
 if selected_student:
     st.header(f"{selected_student} 학생의 점수 대시보드")
 
-    student_data = df[df["이름"] == selected_student].iloc[0]
+    # 선택된 학생 데이터 필터링
+    student_df = df[df["이름"] == selected_student]
+    st.write(f"'{selected_worksheet_name}' 시트에서 '{selected_student}' 학생 데이터 미리보기:")
+    st.dataframe(student_df, hide_index=True)  # 선택된 학생만 표시, 인덱스 숨김
+
+    student_data = student_df.iloc[0]
     student_scores = pd.DataFrame({
         "단원": score_columns,
         "점수": [student_data[col] for col in score_columns]
@@ -125,7 +129,7 @@ if selected_student:
     st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("세부 점수")
-    st.dataframe(plot_df.set_index("단원"))
+    st.dataframe(plot_df.set_index("단원"), hide_index=True)  # 인덱스 숨김
 
 else:
     st.info("왼쪽 사이드바에서 학생을 선택하여 대시보드를 확인하세요.")
