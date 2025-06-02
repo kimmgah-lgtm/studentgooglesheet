@@ -65,10 +65,37 @@ def load_data(worksheet_name):
         st.error(f"'{worksheet_name}' 시트에서 데이터를 불러오는 데 실패했습니다: {e}")
         return pd.DataFrame()
 
-# 갱신 버튼
-if st.button("데이터 새로고침"):
-    st.cache_data.clear()  # 캐시 초기화
-    st.rerun()  # 앱 새로고침
+# 버튼 스타일링 CSS
+st.markdown("""
+    <style>
+    .refresh-button {
+        background-color: #007BFF;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .refresh-button:hover {
+        background-color: #0056b3;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# 버튼을 오른쪽 끝으로 배치
+col1, col2 = st.columns([4, 1])  # 왼쪽 80%, 오른쪽 20% 비율
+with col1:
+    st.write("")  # 빈 공간
+with col2:
+    if st.button("데이터 새로고침", key="refresh_button"):
+        st.cache_data.clear()  # 캐시 초기화
+        st.rerun()  # 앱 새로고침
+    # 버튼에 CSS 클래스 적용
+    st.markdown(
+        '<style>#refresh_button {display: none;} .stButton button {background-color: #007BFF; color: white;}</style>',
+        unsafe_allow_html=True
+    )
 
 df = load_data(selected_worksheet_name)
 
