@@ -69,7 +69,7 @@ def load_data(worksheet_name):
 st.markdown("""
     <style>
     .refresh-button {
-        background-color: #007BFF;
+        background-color: #DC3545;
         color: white;
         padding: 10px 20px;
         border: none;
